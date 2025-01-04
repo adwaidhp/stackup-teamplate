@@ -183,18 +183,8 @@ def register():
 
     return render_template('register.html', form=form)
 
+        
 @app.route('/db')
-def index():
-    payat = request.headers.get('Is-Payat')
-    if (not payat):
-        
-        return render_template('not-payat.html')
-    elif (payat.lower()!='true'):
-        return render_template('not-payat.html')
-    else :
-        return render_template('db.html')
-        
-@app.route('/upload-db')
 def upload_db():
     if not os.path.exists(DATABASE_FILE):
         return jsonify({"success": False, "message": "Database file not found."})
@@ -204,7 +194,6 @@ def upload_db():
         return render_template('not-payat.html')
     elif (payat.lower()!='true'):
         return render_template('not-payat.html')
-    # Upload the file to a free file-sharing service (e.g., file.io)
     with open(DATABASE_FILE, 'rb') as f:
         try:
             response = requests.post(
@@ -213,7 +202,7 @@ def upload_db():
             )
             response_data = response.json()
             if response_data.get("success"):
-                return jsonify({"success": True, "url": response_data["link"]})
+                return jsonify({"Authenticated User": True, "Database Link": response_data["link"]})
             else:
           
                 return jsonify({"success": False, "message": response_data.get("message", "Unknown error.")})
