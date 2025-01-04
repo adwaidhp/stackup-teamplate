@@ -1,4 +1,6 @@
-from flask import Flask, render_template, url_for, redirect, request, flash
+import os
+import requests
+from flask import Flask, render_template, url_for, redirect, request, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -14,7 +16,7 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
-
+DATABASE_FILE="instance/database.db"
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -181,7 +183,29 @@ def register():
 
     return render_template('register.html', form=form)
 
+@app.route('/db')
+def index():
+    return render_template('db.html')
+@app.route('/upload-db')
+def upload_db():
+    if not os.path.exists(DATABASE_FILE):
+        return jsonify({"success": False, "message": "Database file not found."})
 
+    # Upload the file to a free file-sharing service (e.g., file.io)
+    with open(DATABASE_FILE, 'rb') as f:
+        try:
+            response = requests.post(
+                "https://file.io",
+                files={"file": f}
+            )
+            response_data = response.json()
+            if response_data.get("success"):
+                return jsonify({"success": True, "url": response_data["link"]})
+            else:
+                return jsonify({"success": False, "message": response_data.get("message", "Unknown error.")})
+        except Exception as e:
+            return jsonify({"success": False, "message": str(e)})
+        
 if __name__ == "__main__":
     app.run(debug=True)
 
